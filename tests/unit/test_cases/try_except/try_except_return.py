@@ -1,4 +1,3 @@
-
 def f():
     try:
         print(a)

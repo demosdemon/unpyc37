@@ -1,3 +1,2 @@
-
-def a(b:int) -> A:
+def a(b: int) -> A:
     return A()

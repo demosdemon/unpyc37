@@ -1,5 +1,4 @@
-
 def f():
-    print('generator')
+    print("generator")
     return True
     yield

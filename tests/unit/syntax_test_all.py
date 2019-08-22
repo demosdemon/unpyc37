@@ -10,7 +10,5 @@ class DecompileTestAll(unittest.TestCase):
         self.maxDiff = 10000
 
 
-test_dir = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)), 'test_cases'
-)
+test_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "test_cases")
 make_tests_from_folder(test_dir, DecompileTestAll)

@@ -1,4 +1,3 @@
-
 def a():
     try:
         return 1

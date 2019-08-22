@@ -1,7 +1,7 @@
 while a:
     try:
-        print('trying')
+        print("trying")
     except:
-        print('error')
+        print("error")
         continue
-    print('proceeding')
+    print("proceeding")

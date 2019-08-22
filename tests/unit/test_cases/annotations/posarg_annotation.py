@@ -1,3 +1,2 @@
-
-def a(x:int):
+def a(x: int):
     pass

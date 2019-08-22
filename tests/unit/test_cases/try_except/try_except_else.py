@@ -1,7 +1,7 @@
 try:
-    print('trying')
+    print("trying")
 except:
-    print('exception')
+    print("exception")
 else:
-    print('no exception')
-print('next thing')
+    print("no exception")
+print("next thing")

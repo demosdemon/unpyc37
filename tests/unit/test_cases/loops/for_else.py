@@ -1,6 +1,6 @@
 for a in (1, 2, 3):
     if a % 2:
         break
-    print('c')
+    print("c")
 else:
-    print('d')
+    print("d")

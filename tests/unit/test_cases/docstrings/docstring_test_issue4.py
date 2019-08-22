@@ -1,12 +1,13 @@
 'func placeholder - with ("""\\nstring\\n""")'
 
+
 def foo():
     'func placeholder - \' and with ("""\\nstring\\n""")'
     pass
 
 
 def bar():
-    'func placeholder - \' and with (\'\'\'\\nstring\\n\'\'\') and \\"\\"\\"\\nstring\\n\\"\\"\\" '
+    "func placeholder - ' and with ('''\\nstring\\n''') and \\\"\\\"\\\"\\nstring\\n\\\"\\\"\\\" "
     pass
 
 

@@ -1,3 +1,2 @@
-
-def f(a:int, b:str, *d:tuple):
+def f(a: int, b: str, *d: tuple):
     pass
