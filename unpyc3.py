@@ -1399,10 +1399,14 @@ class WhileStatement(PyStatement):
     def __init__(self, cond, body):
         self.cond = cond
         self.body = body
+        self.else_body: Suite = None
 
     def display(self, indent):
         indent.write("while {}:", self.cond)
         self.body.display(indent + 1)
+        if self.else_body:
+            indent.write("else:")
+            self.else_body.display(indent + 1)
 
 
 class DecorableStatement(PyStatement):
@@ -2721,8 +2725,13 @@ class SuiteDecompiler:
         if jump_addr.opcode == POP_BLOCK and not end_of_loop:
             # It's a while loop
             stmt = WhileStatement(cond, d_true.suite)
+            if jump_addr[1] != last_loop.jump():
+                d_else = SuiteDecompiler(jump_addr[1], last_loop.jump())
+                d_else.run()
+                stmt.else_body = d_else.suite
+
             self.suite.add_statement(stmt)
-            return jump_addr[1]
+            return last_loop.jump()
         # It's an if-else (expression or statement)
         if end_true.opcode == JUMP_FORWARD:
             end_false = end_true.jump()
