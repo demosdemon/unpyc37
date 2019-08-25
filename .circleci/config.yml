@@ -2,10 +2,6 @@ version: 2.1
 
 workflows:
   version: 2
-  linux-python-3.8-rc:
-    jobs:
-      - linux-build:
-          tag: 3.8-rc
   linux-python-3.7.4:
     jobs:
       - linux-build:
