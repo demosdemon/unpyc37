@@ -1,0 +1,54 @@
+version: 2.1
+
+executors:
+  linux-python:
+    parameters:
+      tag:
+        type: string
+
+    docker:
+      - image: circleci/python:<< parameters.tag >>
+
+    working_directory: ~/repo
+
+jobs:
+  linux-build:
+    parameters:
+      tag:
+        type: string
+
+    executor:
+      name: linux-python
+      tag: << parameters.tag >>
+
+    steps:
+      - checkout
+
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ arch }}-{{ checksum "requirements.txt" }}
+            - v1-dependencies-{{ arch }}-
+
+      - run:
+          name: Setup Virtual Environment
+          command: |
+            python3 -m venv .env
+            . .env/bin/activate
+            python -m pip install -U pip setuptools
+            pip install -r requirements.txt
+
+      - save_cache:
+          key: v1-dependencies-{{ arch }}-{{ checksum "requirements.txt" }}
+          paths:
+            - .env
+
+      - run:
+          name: run tests
+          command: |
+            . .env/bin/activate
+            make coverage
+            coveralls
+            mv .coverage coverage.xml htmlcov
+
+      - store_artifacts:
+          path: htmlcov
