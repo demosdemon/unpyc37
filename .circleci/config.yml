@@ -6,7 +6,6 @@ workflows:
     jobs:
       - linux-build:
           tag: 3.8-rc
-  # all versions released after August 2017 (~2 years ago)
   linux-python-3.7.4:
     jobs:
       - linux-build:
@@ -27,74 +26,6 @@ workflows:
     jobs:
       - linux-build:
           tag: 3.7.0
-  linux-python-3.6.9:
-    jobs:
-      - linux-build:
-          tag: 3.6.9
-  linux-python-3.6.8:
-    jobs:
-      - linux-build:
-          tag: 3.6.8
-  linux-python-3.6.7:
-    jobs:
-      - linux-build:
-          tag: 3.6.7
-  linux-python-3.6.6:
-    jobs:
-      - linux-build:
-          tag: 3.6.6
-  linux-python-3.6.5:
-    jobs:
-      - linux-build:
-          tag: 3.6.5
-  linux-python-3.6.4:
-    jobs:
-      - linux-build:
-          tag: 3.6.4
-  linux-python-3.6.3:
-    jobs:
-      - linux-build:
-          tag: 3.6.3
-  linux-python-3.5.7:
-    jobs:
-      - linux-build:
-          tag: 3.5.7
-  linux-python-3.5.6:
-    jobs:
-      - linux-build:
-          tag: 3.5.6
-  linux-python-3.5.5:
-    jobs:
-      - linux-build:
-          tag: 3.5.5
-  linux-python-3.4.10:
-    jobs:
-      - linux-build:
-          tag: 3.4.10
-  linux-python-3.4.9:
-    jobs:
-      - linux-build:
-          tag: 3.4.9
-  linux-python-3.4.8:
-    jobs:
-      - linux-build:
-          tag: 3.4.8
-  linux-python-3.3.7:
-    jobs:
-      - linux-build:
-          tag: 3.3.7
-  linux-python-2.7.16:
-    jobs:
-      - linux-build:
-          tag: 2.7.16
-  linux-python-2.7.15:
-    jobs:
-      - linux-build:
-          tag: 2.7.15
-  linux-python-2.7.14:
-    jobs:
-      - linux-build:
-          tag: 2.7.14
 
 executors:
   linux-python:
