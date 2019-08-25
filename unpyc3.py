@@ -9,7 +9,7 @@ Decompile a module or a function using the decompile() function
 ...        if z == i + j or args[i] == j:
 ...            g = i, j
 ...            return
-...    
+...
 >>> print(decompile(foo))
 
 def foo(x, y, z=3, *args):
@@ -126,43 +126,25 @@ def read_code(stream):
     # Note: stream must be opened in "rb" mode
     import marshal
 
-    if sys.version_info < (3, 4):
-        import imp
+    import importlib.util
 
-        runtime_magic = imp.get_magic()
-    else:
-        import importlib.util
-
-        runtime_magic = importlib.util.MAGIC_NUMBER
+    runtime_magic = importlib.util.MAGIC_NUMBER
 
     magic = stream.read(4)
     if magic != runtime_magic:
         print("*** Warning: file has wrong magic number ***")
 
-    flags = 0
-    if sys.version_info >= (3, 7):
-        flags = struct.unpack("i", stream.read(4))[0]
-
-    if flags & 1:
-        stream.read(4)
-        stream.read(4)
-    else:
-        stream.read(4)  # Skip timestamp
-        if sys.version_info >= (3, 3):
-            stream.read(4)  # Skip rawsize
-            return marshal.load(stream)
+    stream.read(4)  # Skip flags
+    stream.read(4)  # Skip timestamp
+    stream.read(4)  # Skip rawsize
+    return marshal.load(stream)
 
 
 def dec_module(path) -> Suite:
     if path.endswith(".py"):
-        if sys.version_info < (3, 6):
-            import imp
+        import importlib.util
 
-            path = imp.cache_from_source(path)
-        else:
-            import importlib.util
-
-            path = importlib.util.cache_from_source(path)
+        path = importlib.util.cache_from_source(path)
     elif not path.endswith(".pyc") and not path.endswith(".pyo"):
         raise ValueError("path must point to a .py or .pyc file")
     with open(path, "rb") as stream:
@@ -291,29 +273,19 @@ class Stack:
 def code_walker(code):
     l = len(code)
     code = array("B", code)
-    oparg = 0
     i = 0
-    extended_arg = 0
 
     while i < l:
         op = code[i]
         offset = 1
-        if sys.version_info >= (3, 6):
-            oparg = code[i + offset]
-            offset += 1
-        elif op >= HAVE_ARGUMENT:
-            oparg = code[i + offset] + code[i + offset + 1] * 256 + extended_arg
-            extended_arg = 0
-            offset += 2
+        oparg = code[i + offset]
+        offset += 1
         if op == EXTENDED_ARG:
-            if sys.version_info >= (3, 6):
-                op = code[i + offset]
-                offset += 1
-                oparg <<= 8
-                oparg |= code[i + offset]
-                offset += 1
-            else:
-                extended_arg = oparg * 65536
+            op = code[i + offset]
+            offset += 1
+            oparg <<= 8
+            oparg |= code[i + offset]
+            offset += 1
         yield i, (op, oparg)
         i += offset
 
@@ -1846,13 +1818,6 @@ class SuiteDecompiler:
         start_except = addr.jump()
         start_try = addr[1]
         end_try = start_except
-        if sys.version_info < (3, 7):
-            if end_try.opcode == JUMP_FORWARD:
-                end_try = end_try[1] + end_try.arg
-            elif end_try.opcode == JUMP_ABSOLUTE:
-                end_try = end_try[-1]
-            else:
-                end_try = end_try[1]
         d_try = SuiteDecompiler(start_try, end_try)
         d_try.run()
 
@@ -1942,14 +1907,9 @@ class SuiteDecompiler:
         d_with.run()
         with_stmt.suite = d_with.suite
         self.suite.add_statement(with_stmt)
-        if sys.version_info <= (3, 4):
-            assert end_with.opcode == WITH_CLEANUP
-            assert end_with[1].opcode == END_FINALLY
-            return end_with[2]
-        else:
-            assert end_with.opcode == WITH_CLEANUP_START
-            assert end_with[1].opcode == WITH_CLEANUP_FINISH
-            return end_with[3]
+        assert end_with.opcode == WITH_CLEANUP_START
+        assert end_with[1].opcode == WITH_CLEANUP_FINISH
+        return end_with[3]
 
     def POP_BLOCK(self, addr):
         pass
@@ -2288,36 +2248,22 @@ class SuiteDecompiler:
             self.stack.push(func_call)
 
     def CALL_FUNCTION(self, addr, argc, have_var=False, have_kw=False):
-        if sys.version_info >= (3, 6):
-            pos_argc = argc
-            posargs = self.stack.pop(pos_argc)
-            func = self.stack.pop()
-            self.CALL_FUNCTION_CORE(func, posargs, [], None, None)
-        else:
-            kw_argc = argc >> 8
-            pos_argc = argc & 0xFF
-            varkw = self.stack.pop() if have_kw else None
-            varargs = self.stack.pop() if have_var else None
-            kwargs_iter = iter(self.stack.pop(2 * kw_argc))
-            kwargs = list(zip(kwargs_iter, kwargs_iter))
-            posargs = self.stack.pop(pos_argc)
-            func = self.stack.pop()
-            self.CALL_FUNCTION_CORE(func, posargs, kwargs, varargs, varkw)
+        pos_argc = argc
+        posargs = self.stack.pop(pos_argc)
+        func = self.stack.pop()
+        self.CALL_FUNCTION_CORE(func, posargs, [], None, None)
 
     def CALL_FUNCTION_VAR(self, addr, argc):
         self.CALL_FUNCTION(addr, argc, have_var=True)
 
     def CALL_FUNCTION_KW(self, addr, argc):
-        if sys.version_info >= (3, 6):
-            keys = self.stack.pop()
-            kwargc = len(keys.val)
-            kwarg_values = self.stack.pop(kwargc)
-            posargs = self.stack.pop(argc - kwargc)
-            func = self.stack.pop()
-            kwarg_dict = list(zip([PyName(k) for k in keys], kwarg_values))
-            self.CALL_FUNCTION_CORE(func, posargs, kwarg_dict, None, None)
-        else:
-            self.CALL_FUNCTION(addr, argc, have_kw=True)
+        keys = self.stack.pop()
+        kwargc = len(keys.val)
+        kwarg_values = self.stack.pop(kwargc)
+        posargs = self.stack.pop(argc - kwargc)
+        func = self.stack.pop()
+        kwarg_dict = list(zip([PyName(k) for k in keys], kwarg_values))
+        self.CALL_FUNCTION_CORE(func, posargs, kwarg_dict, None, None)
 
     def CALL_FUNCTION_EX(self, addr, flags):
         kwarg_unpacks = []
@@ -2439,10 +2385,9 @@ class SuiteDecompiler:
 
     def BUILD_MAP(self, addr, count):
         d = PyDict()
-        if sys.version_info >= (3, 5):
-            for i in range(count):
-                d.items.append(tuple(self.stack.pop(2)))
-            d.items = list(reversed(d.items))
+        for i in range(count):
+            d.items.append(tuple(self.stack.pop(2)))
+        d.items = list(reversed(d.items))
         self.stack.push(d)
 
     def BUILD_MAP_UNPACK(self, addr, count):
@@ -2843,33 +2788,6 @@ class SuiteDecompiler:
 
     # Function creation
 
-    def MAKE_FUNCTION_OLD(self, addr, argc, is_closure=False):
-        testType = self.stack.pop().val
-        if isinstance(testType, str):
-            code = Code(self.stack.pop().val, self.code)
-        else:
-            code = Code(testType, self.code)
-        closure = self.stack.pop() if is_closure else None
-        # parameter annotation objects
-        paramobjs = {}
-        paramcount = (argc >> 16) & 0x7FFF
-        if paramcount:
-            paramobjs = dict(zip(self.stack.pop().val, self.stack.pop(paramcount - 1)))
-        # default argument objects in positional order
-        defaults = self.stack.pop(argc & 0xFF)
-        # pairs of name and default argument, with the name just below the object on the stack, for keyword-only parameters
-        kwdefaults = {}
-        for i in range((argc >> 8) & 0xFF):
-            k, v = self.stack.pop(2)
-            if hasattr(k, "name"):
-                kwdefaults[k.name] = v
-            elif hasattr(k, "val"):
-                kwdefaults[k.val] = v
-            else:
-                kwdefaults[str(k)] = v
-        func_maker = code_map.get(code.name, DefStatement)
-        self.stack.push(func_maker(code, defaults, kwdefaults, closure, paramobjs))
-
     def MAKE_FUNCTION_NEW(self, addr, argc, is_closure=False):
         testType = self.stack.pop().val
         if isinstance(testType, str):
@@ -2912,10 +2830,7 @@ class SuiteDecompiler:
         )
 
     def MAKE_FUNCTION(self, addr, argc, is_closure=False):
-        if sys.version_info < (3, 6):
-            self.MAKE_FUNCTION_OLD(addr, argc, is_closure)
-        else:
-            self.MAKE_FUNCTION_NEW(addr, argc, is_closure)
+        self.MAKE_FUNCTION_NEW(addr, argc, is_closure)
 
     def LOAD_CLOSURE(self, addr, i):
         # Push the varname.  It doesn't matter as it is not used for now.
@@ -2995,15 +2910,10 @@ class SuiteDecompiler:
         d_with.run()
         with_stmt.suite = d_with.suite
         self.suite.add_statement(with_stmt)
-        if sys.version_info <= (3, 4):
-            assert end_with.opcode == WITH_CLEANUP
-            assert end_with[1].opcode == END_FINALLY
-            return end_with[2]
-        else:
-            assert end_with.opcode == WITH_CLEANUP_START
-            assert end_with[1].opcode == GET_AWAITABLE
-            assert end_with[4].opcode == WITH_CLEANUP_FINISH
-            return end_with[5]
+        assert end_with.opcode == WITH_CLEANUP_START
+        assert end_with[1].opcode == GET_AWAITABLE
+        assert end_with[4].opcode == WITH_CLEANUP_FINISH
+        return end_with[5]
 
     def SETUP_ASYNC_WITH(self, addr: Address, arg):
         pass
