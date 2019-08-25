@@ -1,1 +1,1 @@
-a = lambda: (yield)
+a = lambda : (yield)

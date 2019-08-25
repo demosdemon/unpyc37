@@ -1,4 +1,3 @@
 import io
-
-with io.open("rb"):
+with io.open('rb'):
     pass

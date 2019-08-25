@@ -1,6 +1,7 @@
+
 def f():
     try:
-        print("trying")
+        print('trying')
     except:
         return False
     return True

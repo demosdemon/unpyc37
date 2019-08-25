@@ -1,5 +1,6 @@
+
 def f():
-    print("before loop")
+    print('before loop')
     while a:
         if b:
             print(c)

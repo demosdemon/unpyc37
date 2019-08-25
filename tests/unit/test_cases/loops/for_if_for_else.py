@@ -3,4 +3,4 @@ for x in y:
         for r in t:
             print(r)
     else:
-        print("not a")
+        print('not a')

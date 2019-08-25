@@ -1,1 +1,1 @@
-a = f"{len(a):X}"
+a = f'{len(a):X}'

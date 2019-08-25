@@ -1,7 +1,7 @@
 if a:
     if b:
         with c:
-            print("test")
+            print('test')
     else:
         with c:
-            print("test 2")
+            print('test 2')

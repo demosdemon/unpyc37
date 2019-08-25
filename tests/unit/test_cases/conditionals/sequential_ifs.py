@@ -1,7 +1,7 @@
 if a:
-    print("a")
+    print('a')
 if b:
-    print("b")
+    print('b')
 if c:
-    print("c")
-print("done")
+    print('c')
+print('done')

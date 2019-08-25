@@ -1,3 +1,4 @@
+
 def a():
     try:
         print(a)

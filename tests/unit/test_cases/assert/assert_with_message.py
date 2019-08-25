@@ -1,1 +1,1 @@
-assert __name__, "Your Python is normal"
+assert __name__, 'Your Python is normal'

@@ -1,8 +1,8 @@
 while True:
     try:
-        print("trying")
+        print('trying')
     except:
-        print("break!")
+        print('break!')
         break
     else:
-        print("else print")
+        print('else print')

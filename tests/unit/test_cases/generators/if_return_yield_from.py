@@ -1,3 +1,4 @@
+
 def f():
     if a:
         return

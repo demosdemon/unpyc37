@@ -27,8 +27,9 @@ import inspect
 import struct
 import sys
 from array import array
-from opcode import HAVE_ARGUMENT, cmp_op, opmap, opname
 from typing import Any, Iterable, List, Union
+
+from opcode import HAVE_ARGUMENT, cmp_op, opmap, opname
 
 __all__ = ["decompile"]
 
